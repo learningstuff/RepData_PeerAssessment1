@@ -1,19 +1,12 @@
 # Reproducible Research: Peer Assessment 1
 
-```{r setoptions, echo=FALSE, message = FALSE}
-# Call libraries and set options.
-library(knitr)
-library(plyr)
-library(Hmisc)
-library(lattice)
-opts_chunk$set(echo = TRUE)
-options(scipen = 1, digits = 2)
-```
+
 
 
 ## Loading and preprocessing the data
 
-```{r loaddata}
+
+```r
 # Load data into R.
 dataset <- read.csv(unz("activity.zip", "activity.csv"), header = TRUE, sep = ",")
 
@@ -32,40 +25,51 @@ intDataset <- ddply(dataset, .(interval), summarise,
 
 Histogram of total number of steps taken per day:
 
-```{r histogram1}
+
+```r
 # Create histogram.
 hist(dailyDataset$steps.total, col = "blue", 
      main = "Histogram of Total Steps per Day", xlab = "")
 ```
 
-```{r averagesteps}
+![plot of chunk histogram1](figure/histogram1.png) 
+
+
+```r
 # Calculate mean and median number of steps
 meanSteps <- as.numeric(mean(dailyDataset$steps.total, na.rm = TRUE))
 medianSteps <- median(dailyDataset$steps.total, na.rm = TRUE)
 ```
 
-The mean number of steps taken per day is `r meanSteps` and the median number 
-of steps taken per day is `r medianSteps`.
+The mean number of steps taken per day is 10766.19 and the median number 
+of steps taken per day is 10765.
 
 
 ## What is the average daily activity pattern?
 
-```{r avedailyact}
+
+```r
 # Create time series plot of mean steps taken, by time interval.
 plot(intDataset$interval, intDataset$steps.mean, xlab = "Interval", 
      ylab = "Mean Number of Steps", type = "l")
+```
+
+![plot of chunk avedailyact](figure/avedailyact.png) 
+
+```r
 # Calculate interval with maximum average number of steps.
 maxTotalSteps <- max(intDataset$steps.mean, na.rm = TRUE)
 intervalMax <- intDataset$interval[which.max(intDataset$steps.mean)]
 ```
 
-On average across all the days in the dataset, the interval `r intervalMax`
+On average across all the days in the dataset, the interval 835
 contains the maximum number of steps.
 
 
 ## Imputing missing values
 
-```{r imputing}
+
+```r
 # Calculate number of missing values.
 steps.missing <- sum(is.na(dataset$steps))
 # Create duplicate of original dataset for imputing missing values.
@@ -78,7 +82,7 @@ datasetImpute$steps.imputed[is.na(datasetImpute$steps.imputed)] <-
   round(datasetImpute$steps.mean[is.na(datasetImpute$steps.imputed)], digits = 0)
 ```
 
-There are `r steps.missing` missing step values.
+There are 2304 missing step values.
 
 
 Strategy for imputing missing data:
@@ -86,21 +90,27 @@ Strategy for imputing missing data:
 Missing step values were replaced with the rounded value of mean steps taken for
 a given 5-minute interval.
 
-```{r histogram2}
+
+```r
 # Restructure dataset so that each row is a day.
 dailyDatasetImpute <- ddply(datasetImpute, .(date), summarise,
                     steps.total = sum(steps.imputed))
 # Create histogram.
 hist(dailyDatasetImpute$steps.total, col = "blue", 
      main = "Histogram of Total Steps per Day\n(with imputed values)", xlab = "")
+```
+
+![plot of chunk histogram2](figure/histogram2.png) 
+
+```r
 # Calculate mean and median number of steps
 meanStepsImpute <- as.numeric(mean(dailyDatasetImpute$steps.total, na.rm = TRUE))
 medianStepsImpute <- as.numeric(median(dailyDatasetImpute$steps.total, na.rm = TRUE))
 ```
 
 With imputed values for number of steps taken, the mean number of steps taken
-per day is `r meanStepsImpute` and the median number of steps taken per day is
-`r medianStepsImpute`.
+per day is 10765.64 and the median number of steps taken per day is
+10762.
 These values do not differ much from the previously calculated values. With
 imputed values, the mean decreased by 0.6, while the median decreased by 3.
 Imputing missing data increased the frequency at which a given total number of
@@ -109,7 +119,8 @@ distribution of total steps taken per day.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r weekday}
+
+```r
 # Create factor variable indicating weekday vs. weekend.
 datasetImpute$weekday <- weekdays(as.Date(datasetImpute$date))
 datasetImpute$weekdayFactor[datasetImpute$weekday == "Sunday" |
@@ -131,3 +142,5 @@ xyplot(steps.mean ~ interval | weekdayFactor, data = intDatasetImpute,
        type = "l", layout = c(1, 2), xlab = "5-minute time interval",
        ylab = "Mean number of steps taken")
 ```
+
+![plot of chunk weekday](figure/weekday.png) 
